@@ -1,13 +1,18 @@
 """训练场"""
 
 from env import OsmoEnv
-from player import Player
+from player import Player, BravePlayer, MadPlayer, AimlessPlayer, NormalPlayer
 import time
 
 
 env = OsmoEnv()
 player = Player()
+brave_enemy = BravePlayer(target=0)
+mad_enemy = MadPlayer(theta=0)
+aimless_enemy = AimlessPlayer()
+normal_enemy = NormalPlayer(pstay=0.8)
 
+env.set_enemy_player(brave_enemy)
 
 observation = env.reset()
 for i in range(100):

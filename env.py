@@ -20,6 +20,7 @@ class OsmoEnv(object):
     def __init__(self):
         plt.ion()
         self.world = World()
+        self.enemy_player = None
         self.episode = -1
         self.total = -1
 
@@ -31,6 +32,12 @@ class OsmoEnv(object):
         self.nframe = -1
         self.last_score = self.world.cells[0].radius ** 2
         return self.world.cells
+
+
+    def set_enemy_player(self, player):
+        """设置对手玩家"""
+        self.enemy_player = player
+        assert hasattr(player, 'play')
 
 
     def render(self):
@@ -52,6 +59,12 @@ class OsmoEnv(object):
 
         if action is not None:
             self.world.eject(me, action)
+
+        if self.enemy_player is not None:
+            enemy_action = self.enemy_player.play(self.world.cells)
+            if enemy_action is not None:
+                self.world.eject(enemy, enemy_action)
+
         self.world.update(Consts["FRAME_DELTA"])
 
         if me.dead:
