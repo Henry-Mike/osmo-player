@@ -55,9 +55,9 @@ class OsmoEnv(object):
         self.world.update(Consts["FRAME_DELTA"])
 
         if me.dead:
-            return 'LOSE', -10000, True
+            return 'LOSE', -1000000, True
         if enemy.dead:
-            return 'WIN', 10000, True
+            return 'WIN', 1000000, True
 
         observation = self.world.cells
         cur_score = me.radius ** 2
@@ -78,9 +78,11 @@ class OsmoEnv(object):
         return random.random() * 2 * math.pi
 
 
-    def close(self):
+    def hold_on(self):
         input('press <enter> to exit ...')
 
+    def close(self):
+        pass
 
 
 ZOOM = 4
