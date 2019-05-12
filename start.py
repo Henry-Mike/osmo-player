@@ -16,12 +16,16 @@ if __name__ == "__main__":
     last_tick = int(round(time.time() * 1000))
 
     player = Player()
+    count = 0
     while not world.result:
         # Advance timer
         current_tick = int(round(time.time() * 1000))
         frame_delta = (current_tick - last_tick) * Consts["FPS"] / 1000
         last_tick = current_tick
         world.update(Consts["FRAME_DELTA"])
-        player.play(world.cells)
-        # only test 1 frame
-        break
+
+        # 跳过开头帧，因为有很多出生即碰撞的球尚未被吸收
+        if count >= 5:
+            player.play(world.cells)
+            break
+        count += 1
