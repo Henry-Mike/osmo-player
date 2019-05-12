@@ -131,21 +131,6 @@ def get_covered_square(cell):
     j[j >= MINI_WORLD_X] -= MINI_WORLD_X
     i[i >= MINI_WORLD_Y] -= MINI_WORLD_Y
 
-    # 索引跨边界时，边界上的 cover 需要复制一份
-    xoverflow = j < 0
-    if any(xoverflow):
-        insert_to = np.where(j == 0)[0][0]
-        j[xoverflow] -= 1
-        j = np.insert(j, insert_to, -1)
-        area = np.insert(area, insert_to, area[:, insert_to], axis=1)
-
-    yoverflow = i < 0
-    if any(yoverflow):
-        insert_to = np.where(i == 0)[0][0]
-        i[yoverflow] -= 1
-        i = np.insert(i, insert_to, -1)
-        area = np.insert(area, insert_to, area[insert_to], axis=0)
-
     return i, j, area
 
 
@@ -174,21 +159,6 @@ def get_covered_circle(cell):
     # 但越界的 index 需要处理
     j[j >= MINI_WORLD_X] -= MINI_WORLD_X
     i[i >= MINI_WORLD_Y] -= MINI_WORLD_Y
-
-    # 索引跨边界时，边界上的 cover 需要复制一份
-    xoverflow = j < 0
-    if any(xoverflow):
-        insert_to = np.where(j == 0)[0][0]
-        j[xoverflow] -= 1
-        j = np.insert(j, insert_to, -1)
-        area = np.insert(area, insert_to, area[:, insert_to], axis=1)
-
-    yoverflow = i < 0
-    if any(yoverflow):
-        insert_to = np.where(i == 0)[0][0]
-        i[yoverflow] -= 1
-        i = np.insert(i, insert_to, -1)
-        area = np.insert(area, insert_to, area[insert_to], axis=0)
 
     return i, j, area
 
