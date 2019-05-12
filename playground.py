@@ -7,10 +7,10 @@ import time
 
 env = OsmoEnv()
 player = Player()
-brave_enemy = BravePlayer(target=0)
+brave_enemy = BravePlayer(target=0, pmove=0.3)
 mad_enemy = MadPlayer(theta=0)
 aimless_enemy = AimlessPlayer()
-normal_enemy = NormalPlayer(pstay=0.8)
+normal_enemy = NormalPlayer(pmove=0.2)
 
 env.set_enemy_player(brave_enemy)
 
