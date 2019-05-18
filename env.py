@@ -5,6 +5,7 @@
 import math
 from matplotlib import pyplot as plt
 import numpy as np
+import queue
 import random
 import sys
 
@@ -15,29 +16,52 @@ from consts import Consts
 from world import World
 
 
+plt.ion()
+
+
+class PlayerProxy(object):
+    """为 player 创建一个代理层。
+    这是因为 Player.strategy 在 World.update 方法中写死了，导致无法从外部获取 action，
+    player 无法与 OsmoEnv 交互。
+    """
+    def __init__(self, player):
+        self.player = player
+        self.action_queue = queue.Queue(maxsize=1)
+
+    def __getattr__(self, name):
+        return getattr(self.player, name)
+
+    def reset(self):
+        self.action_queue = queue.Queue(maxsize=1)
+
+    def take_action(self, cells):
+        return self.player.strategy(cells)
+
+    def set_action(self, action):
+        self.action_queue.put_nowait(action)
+
+    def strategy(self, cells):
+        """这个函数将作为代理函数被 World 调用"""
+        return self.action_queue.get_nowait()
+
+
 class OsmoEnv(object):
     """osmo 训练环境"""
-    def __init__(self):
-        plt.ion()
-        self.world = World()
-        self.enemy_player = None
+    def __init__(self, player0, player1):
+        player0 = PlayerProxy(player0)
+        self.world = World(player0, player1)
         self.episode = -1
         self.total = -1
 
 
     def reset(self):
         self.world.new_game()
+        self.world.player0.reset()
         self.episode += 1
         self.total += 1
         self.nframe = -1
-        self.last_score = self.world.cells[0].radius ** 2
+        self.last_score = self.world.cells[self.world.player0.id].radius ** 2
         return self.world.cells
-
-
-    def set_enemy_player(self, player):
-        """设置对手玩家"""
-        self.enemy_player = player
-        assert hasattr(player, 'play')
 
 
     def render(self):
@@ -54,41 +78,27 @@ class OsmoEnv(object):
         self.total += 1
         self.nframe += 1
 
-        me = self.world.cells[0]
-        enemy = self.world.cells[1]
-
-        if action is not None:
-            self.world.eject(me, action)
-
-        if self.enemy_player is not None:
-            enemy_action = self.enemy_player.play(self.world.cells)
-            if enemy_action is not None:
-                self.world.eject(enemy, enemy_action)
-
+        self.world.player0.set_action(action)
         self.world.update(Consts["FRAME_DELTA"])
 
+        me = self.world.cells[self.world.player0.id]
+        enemy = self.world.cells[self.world.player1.id]
         if me.dead:
-            return 'LOSE', -1000000, True
+            return 'LOSE', -1, True
         if enemy.dead:
-            return 'WIN', 1000000, True
+            return 'WIN', 1, True
 
         observation = self.world.cells
         cur_score = me.radius ** 2
-        reward = cur_score - self.last_score
+        reward = (cur_score - self.last_score) / 1e4
         done = False
         self.last_score = cur_score
 
         return observation, reward, done
 
 
-    def random_action(self):
-        """生成一个随机动作"""
-
-        # 有一定几率不发射
-        if random.random() < 0.9:
-            return None
-
-        return random.random() * 2 * math.pi
+    def take_action(self):
+        return self.world.player0.take_action(self.world.cells)
 
 
     def hold_on(self):

@@ -1,29 +1,27 @@
 """训练场"""
 
 from env import OsmoEnv
-from player import Player, BravePlayer, MadPlayer, AimlessPlayer, NormalPlayer
+from my_player import MyPlayer
 import time
 
 
-env = OsmoEnv()
-player = Player()
-brave_enemy = BravePlayer(target=0, pmove=0.3)
-mad_enemy = MadPlayer(theta=0)
-aimless_enemy = AimlessPlayer()
-normal_enemy = NormalPlayer(pmove=0.2)
+me = MyPlayer(0, 'normal', pmove=0.2)
+enemy = MyPlayer(1, 'brave', target=0, pmove=0.3)
+# enemy = MyPlayer(1, 'mad', theta=0)
+# enemy = MyPlayer(1, 'aimless')
 
-env.set_enemy_player(brave_enemy)
+env = OsmoEnv(me, enemy)
 
 observation = env.reset()
 for i in range(100):
     env.render()
 
     # 请使用你的 player 产生 action
-    action = env.random_action()
+    action = env.take_action()
     observation, reward, done = env.step(action)
 
     action_str = 'None' if action is None else '{:6.4f}'.format(action)
-    print('round {:03d}, action: {:>6s}, reward: {:8.2f}, done: {}'.format(i, action_str, reward, done))
+    print('round {:03d}, action: {:>6s}, reward: {:9.6f}, done: {}'.format(i, action_str, reward, done))
 
     if done:
         observation = env.reset()
